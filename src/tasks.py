@@ -16,6 +16,7 @@ from enums import DeviceEnum, ErrorStatusEnum, ResponseStatusEnum
 from models import SuperResolutionModel
 from utils import (
     clear_memory,
+    delete_image_from_storage,
     download_image_from_storage,
     get_now_timestamp,
     save_error,
@@ -51,16 +52,13 @@ def upscale(task_id: str):
 
     try:
         scale = MODEL_INFO[model_settings.model_name].scale
-        input_url = db.reference(f"{app_name}/{task_id}").get()["images"]["input"]
-        img_lq = (
-            download_image_from_storage(task_id, input_url).astype(np.float32) / 255.0
-        )
+        img_lq = download_image_from_storage(task_id, "input.png")
+        img_lq = img_lq.astype(np.float32) / 255.0
         img_lq = np.transpose(
             img_lq if img_lq.shape[2] == 1 else img_lq[:, :, [2, 1, 0]], (2, 0, 1)
         )  # HCW-BGR to CHW-RGB
-        img_lq = (
-            torch.from_numpy(img_lq).float().unsqueeze(0).to(model_settings.device)
-        )  # CHW-RGB to NCHW-RGB
+        img_lq = torch.from_numpy(img_lq).float().unsqueeze(0)  # CHW-RGB to NCHW-RGB
+        img_lq = img_lq.to(model_settings.device)
         if model_settings.device == DeviceEnum.CUDA:
             img_lq = img_lq.half()
             # inference
@@ -84,16 +82,16 @@ def upscale(task_id: str):
                 output[[2, 1, 0], :, :], (1, 2, 0)
             )  # CHW-RGB to HCW-BGR
         output = (output * 255.0).round().astype(np.uint8)  # float32 to uint8
-
         output_path = f"{task_id}/output.png"
         cv2.imwrite(output_path, output)
         output_url = save_image_to_storage(task_id, output_path)
+        delete_image_from_storage(task_id, "input.png")
 
         db.reference(f"{app_name}/{task_id}").update(
             {
                 "status": ResponseStatusEnum.COMPLETED,
                 "updated_at": get_now_timestamp(),
-                "images": {"input": input_url, "output": output_url},
+                "images": {"output": output_url},
             }
         )
     except ValueError as e:
