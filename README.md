@@ -30,7 +30,7 @@ cd SR-Worker
 docker build -t sr-worker .
 ```
 
-### Run docker image
+3. Run docker image
 ```shell
 docker run -d --name <worker_container_name> \
 --gpus='"device=0"' -e BROKER_URI=<broker_uri> \
@@ -48,5 +48,5 @@ docker run -d --name <worker_container_name> \
 sr-worker
 ```
 
-### Test with FastAPI
+## Test with FastAPI
 - Check our [SR-FastAPI](https://github.com/ainize-team/SR-FastAPI) Repo.
