@@ -17,26 +17,33 @@ pip install -r requirements-dev.txt
 pre-commit install
 ```
 
-## Running the Celery worker server with RabbitMQ(as Broker) Firebase(as Backend).
-### Running RabbitMQ server using Docker
+## Installation
+1. Run RabbitMQ image as a broker
 ```shell
-docker run -d --name rabbitmq -p 5672:5672 -p 8080:15672 --restart=unless-stopped rabbitmq:3.9.21-management
+docker run -d --name sr-rabbitmq -p 5672:5672 -p 8080:15672 --restart=unless-stopped rabbitmq:3.9.21-management
 ```
 
-## 3-1. Using docker
-### Build docker file
-```
+2. Build docker image
+```shell
 git clone https://github.com/ainize-team/SR-Worker.git
 cd SR-Worker
 docker build -t sr-worker .
 ```
 
-### Run docker container
-```
+### Run docker image
+```shell
 docker run -d --name <worker_container_name> \
 --gpus='"device=0"' -e BROKER_URI=<broker_uri> \
 -e DATABASE_URL=<firebase_realtime_database_url> \
 -e STORAGE_BUCKET=<firebase_storage_url> \
+-v <firebase_credential_path>:/app/key -v <model_local_path>:/app/model \
+sr-worker
+```
+Or, you can use the env file to run as follows.
+```shell
+docker run -d --name <worker_container_name> \
+--gpus='"device=0"' \
+--env-file <env filename> \
 -v <firebase_credential_path>:/app/key -v <model_local_path>:/app/model \
 sr-worker
 ```
