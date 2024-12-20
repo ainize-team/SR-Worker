@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  swinlr-large-x4:
+    image: devainetwork/sr-worker
+    container_name: swinlr-large-x4-worker
+    env_file:
+      - .env
+    environment:
+      - VHOST_NAME=swinlr-large-x4
+    volumes:
+      - <firebase_credential_path>:/app/key
+      - <model_local_path>:/app/model
+    networks:
+      - sr-fastapi_dev
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [<gpu_id>]
+              capabilities: [gpu]
+
+networks:
+  sr-fastapi_dev:
+    external: true
