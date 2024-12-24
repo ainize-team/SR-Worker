@@ -20,8 +20,8 @@ class ModelSettings(BaseSettings):
 class FirebaseSettings(BaseSettings):
     firebase_app_name: str = "super-resolution"
     cred_path: str = "/app/key/serviceAccountKey.json"
-    database_url: str
-    storage_bucket: str
+    firebase_database_url: str
+    firebase_storage_bucket: str
 
 
 celery_worker_settings = CeleryWorkerSettings()
