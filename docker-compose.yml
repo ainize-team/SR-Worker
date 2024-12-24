@@ -2,7 +2,9 @@ version: '3'
 
 services:
   swinlr-large-x4:
-    image: devainetwork/sr-worker
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: swinlr-large-x4-worker
     env_file:
       - .env
